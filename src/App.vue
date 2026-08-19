@@ -76,21 +76,18 @@ onMounted(reloadAssets)
 
 <template>
   <div class="app-shell">
-    // 顶部导航栏，包含品牌标识和“全部开始”按钮。
     <header class="topbar">
       <div class="brand"><span><HardDriveUpload :size="20" /></span><div><b>Upload Studio</b><small>素材管理</small></div></div>
       <button class="primary compact" :disabled="!tasks.length || activeCount > 0" @click="startAll"><Upload :size="16" />全部开始</button>
     </header>
 
     <main>
-      // 上传任务概览区域，显示任务总数、正在处理的任务数、本次完成的任务数和素材空间大小。
       <section class="summary">
         <div><small>上传任务</small><strong>{{ tasks.length }}</strong></div>
         <div><small>正在处理</small><strong>{{ activeCount }}</strong></div>
         <div><small>本次完成</small><strong>{{ completedCount }}</strong></div>
         <div><small>素材空间</small><strong>{{ formatBytes(totalBytes) }}</strong></div>
       </section>
-      // 上传队列区域，包含文件选择按钮和任务列表。
       <section class="workspace">
         <div class="section-head"><div><h1>上传队列</h1><p>{{ tasks.length ? `${tasks.length} 个任务` : '暂无任务' }}</p></div></div>
         <button class="dropzone" :class="{ dragging }" 
@@ -103,7 +100,6 @@ onMounted(reloadAssets)
         </button>
         <input ref="fileInput" class="hidden-input" type="file" multiple @change="selectFiles" />
 
-        // 上传任务列表，使用 v-for 指令遍历任务数组，显示每个任务的文件名、状态、进度和操作按钮。
         <div class="task-list">
           <article v-for="task in tasks" :key="task.fileId" class="task-row">
             <div class="file-icon"><component :is="fileIcon(task.file.type)" :size="20" /></div>
@@ -113,7 +109,6 @@ onMounted(reloadAssets)
               <div class="progress"><i :style="{ width: `${progress(task)}%` }"></i></div>
               <p v-if="task.error" class="error-text">{{ task.error }}</p>
             </div>
-            // 操作按钮区域，根据任务状态显示不同的按钮，如暂停、开始、重试、完成标记和删除。
             <div class="actions">
               <button v-if="task.status === 'uploading'" title="暂停" @click="pauseTask(task)"><Pause :size="17" /></button>
               <button v-else-if="['waiting','paused'].includes(task.status)" title="开始" @click="startTask(task)"><Play :size="17" /></button>
@@ -125,11 +120,9 @@ onMounted(reloadAssets)
         </div>
       </section>
 
-      // 素材库区域，显示已上传的素材文件，支持刷新和删除操作。
       <section class="library">
         <div class="section-head"><div><h2>素材库</h2><p>{{ assets.length }} 个文件</p></div><button class="icon-button" title="刷新素材" @click="reloadAssets"><RefreshCw :size="17" :class="{ spinning: loadingAssets }" /></button></div>
         <div v-if="assets.length" class="asset-grid">
-          // 使用 v-for 指令遍历素材数组，显示每个素材的预览图标、文件名、大小和创建日期，并提供删除按钮。
           <article v-for="asset in assets" :key="asset.id" class="asset">
             <a class="preview" :href="asset.url" target="_blank"><img v-if="asset.type.startsWith('image/')" :src="asset.url" :alt="asset.name" /><component :is="fileIcon(asset.type)" v-else :size="28" /></a>
             <div class="asset-info"><span><b>{{ asset.name }}</b><small>{{ formatBytes(asset.size) }} · {{ new Date(asset.createdAt).toLocaleDateString() }}</small></span><button title="删除素材" @click="confirmDelete(asset.id, asset.name)"><Trash2 :size="16" /></button></div>
