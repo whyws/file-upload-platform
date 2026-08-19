@@ -95,7 +95,7 @@ onMounted(reloadAssets)
         @dragenter.prevent="dragging = true" 
         @dragover.prevent 
         @dragleave.prevent="dragging = false" 
-        @drop.prevent="dropFiles">//拖拽文件到页面时，添加文件到上传队列
+        @drop.prevent="dropFiles">
           <span><Upload :size="23" /></span><b>选择或拖入文件</b><small>单个分片 5 MB · 3 路并发</small>
         </button>
         <input ref="fileInput" class="hidden-input" type="file" multiple @change="selectFiles" />
