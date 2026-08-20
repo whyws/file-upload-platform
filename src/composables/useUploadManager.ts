@@ -1,7 +1,6 @@
 // 上传调度器
-
 import { useUploadStore } from '../stores/upload'
-import { deleteAsset as requestDeleteAsset, getAssets, getUploadStatus, mergeUpload, uploadChunk } from '../services/uploadApi'
+import { deleteAsset as requestDeleteAsset, deleteUpload, getAssets, getUploadStatus, mergeUpload, uploadChunk } from '../services/uploadApi'
 import type { UploadTask } from '../types'
 
 // 分片大小，单位字节
@@ -137,9 +136,10 @@ export function useUploadManager() {
     controllers.get(task.fileId)?.forEach((controller) => controller.abort())
   }
 
-  // 删除一个上传任务，先暂停它，然后从 Store 中移除。
-  function removeTask(task: UploadTask) {
+  // 删除一个上传任务，先暂停它，await 等待后端清理完成，再继续往下执行，然后从 Store 中移除。
+  async function removeTask(task: UploadTask) {
     pauseTask(task)
+    await deleteUpload(task.fileId)
     store.removeTask(task.fileId)
   }
 

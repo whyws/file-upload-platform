@@ -53,7 +53,7 @@ async function uploadedIndexes(fileId) {
   return (await readdir(folder)).filter((name) => /^\d+\.part$/.test(name)).map((name) => Number(name.replace('.part', ''))).sort((a, b) => a - b)
 }
 
-//核心业务函数（六个接口）
+//核心业务函数（七个接口）
 //获取上传状态,返回一个对象，包含已上传的分片索引和文件的元数据（如果已经合并完成）。
 async function uploadStatus(fileId) {
   const id = safeId(fileId)
@@ -61,6 +61,15 @@ async function uploadStatus(fileId) {
   //如果元数据文件存在，说明文件已经合并完成，返回空的 uploadedChunks 数组和解析后的 asset 对象；否则，返回已上传的分片索引数组。
   if (existsSync(metadataPath)) return { uploadedChunks: [], asset: JSON.parse(await readFile(metadataPath, 'utf8')) }
   return { uploadedChunks: await uploadedIndexes(id) }
+}
+
+//删除分片，后端递归删除对应的临时分片目录。
+async function deleteUpload(response, rawId) {
+  const fileId = safeId(rawId)
+  // recursive: true：递归删除目录及其所有内容。force: true：目录不存在，不报错。maxRetries: 5：删除失败时最多重试 5 次。
+  // 解决文件被暂时占用导致的删除失败.retryDelay: 100：每次重试间隔 100 毫秒
+  await rm(join(chunksDir, fileId), { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })
+  json(response, 200, { id: fileId })
 }
 
 //上传分片,把客户端上传的分片数据保存到服务器的临时目录中。
@@ -170,6 +179,8 @@ createServer(async (request, response) => {
     if (request.method === 'POST' && url.pathname === '/api/uploads/chunk') return await uploadChunk(request, response, url)
     //合并分片：POST /api/uploads/merge
     if (request.method === 'POST' && url.pathname === '/api/uploads/merge') return await mergeFile(request, response)
+    //清理分片：DELETE /api/uploads/
+    if (request.method === 'DELETE' && url.pathname.startsWith('/api/uploads/')) return await deleteUpload(response, url.pathname.replace('/api/uploads/', ''))
     //素材列表：GET /api/assets
     if (request.method === 'GET' && url.pathname === '/api/assets') return await listAssets(response)
     //删除素材：DELETE /api/assets/:id

@@ -1,5 +1,5 @@
 // 前端请求层，负责和后端的所有通信
-// 封装了 5 个 API 调用函数，每个函数对应一个后端接口
+// 封装了 6 个 API 调用函数，每个函数对应一个后端接口
 import type { Asset } from '../types'
 
 
@@ -35,7 +35,10 @@ export async function mergeUpload(payload: { fileId: string; fileName: string; t
     body: JSON.stringify(payload),
   }))
 }
-
+//删除任务时删除临时分片
+export async function deleteUpload(fileId: string) {
+  return parseResponse<{ id: string }>(await fetch(`/api/uploads/${encodeURIComponent(fileId)}`, { method: 'DELETE' }))
+}
 // 获取所有素材函数
 export async function getAssets() {
   return parseResponse<Asset[]>(await fetch('/api/assets'))
