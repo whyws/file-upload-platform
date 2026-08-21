@@ -53,7 +53,7 @@ async function uploadedIndexes(fileId) {
   return (await readdir(folder)).filter((name) => /^\d+\.part$/.test(name)).map((name) => Number(name.replace('.part', ''))).sort((a, b) => a - b)
 }
 
-//核心业务函数（七个接口）
+//核心业务函数（八个接口）
 //获取上传状态,返回一个对象，包含已上传的分片索引和文件的元数据（如果已经合并完成）。
 async function uploadStatus(fileId) {
   const id = safeId(fileId)
